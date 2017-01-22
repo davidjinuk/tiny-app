@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
+const bcrypt = require('bcrypt');
 const PORT = process.env.PORT || 8080;
 
 app.set("view engine", "ejs");
@@ -116,7 +117,8 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   let randomID = randomString();
   let email = req.body.email;
-  let password = req.body.password;
+  const password = req.body.password;
+  const hashed_password = bcrypt.hashSync(password, 10);
 
   for (let userID in users) {
     if (email === users[userID].email) {
@@ -130,7 +132,7 @@ app.post("/register", (req, res) => {
     users[randomID] = {
       id: randomID,
       email: req.body.email,
-      password: req.body.password
+      password: hashed_password
     };
     res.cookie("user_id", randomID);
   }
@@ -151,16 +153,17 @@ app.get("/login", (req, res) => {
 //set cookie called username to info from form
 app.post("/login", (req, res) => {
   let email = req.body.email;
-  let password = req.body.password;
+  const password = req.body.password;
+  const hashed_password = bcrypt.hashSync(password, 10);
 
   for (let userID in users) {
     if (email !== users[userID].email) {
       return res.status(403).send("Please Register!");
     }
-    if ((email === users[userID].email) && (password !== users[userID].password)) {
+    if ((email === users[userID].email) && !bcrypt.compareSync(password, hashed_password)) {
       return res.status(403).send("Incorrect Password!");
     }
-    if ((email === users[userID].email) && (password === users[userID].password)) {
+    if ((email === users[userID].email) && bcrypt.compareSync(password, hashed_password)) {
       res.cookie("user_id", users[userID].id);
       return res.redirect("/urls");
     }
