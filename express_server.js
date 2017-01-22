@@ -1,9 +1,10 @@
 const express = require("express");
 const app = express();
+const cookieParser = require("cookie-parser");
 const PORT = process.env.PORT || 8080;
 
 app.set("view engine", "ejs");
-
+app.use(cookieParser());
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -25,14 +26,18 @@ function randomString() {
 //called handler
 app.get("/urls", (req, res) => {
   let templateVars = {
-    urls: urlDatabase
+    urls: urlDatabase,
+    username: req.cookies["username"]
   };
   res.render("urls_index", templateVars);
 });
 
 //input long url through form
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  let templateVars = {
+    username: req.cookies["username"]
+  };
+  res.render("urls_new", templateVars);
 });
 
 //receive form data of long url
@@ -46,8 +51,11 @@ app.post("/urls", (req, res) => {
 
 //redirect short url to long url page
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[req.params.shortURL];
-  res.redirect(longURL);
+  let templateVars = {
+    longURL: urlDatabase[req.params.shortURL],
+    username: req.cookies["username"]
+  };
+  res.redirect(templateVars.longURL, templateVars);
 });
 
 //to show single URL from user input of shortURL to browser
@@ -55,7 +63,8 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   let templateVars = {
     shortURL: req.params.id,
-    longURL: urlDatabase[req.params.id]
+    longURL: urlDatabase[req.params.id],
+    username: req.cookies["username"]
   };
   res.render("urls_show", templateVars);
 });
@@ -70,10 +79,22 @@ app.post("/urls/:id/delete", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   let shortURL = req.params.id;
   let longURL = req.body.longURL;
-
   //add updated long url
   urlDatabase[shortURL] = longURL;
   res.redirect("/urls/" + shortURL);
+});
+
+//receive form data from partial header
+//set cookie called username to info from form
+app.post("/login", (req, res) => {
+  res.cookie("username", req.body.username);
+  res.redirect("/urls");
+});
+
+//clears the cookie after pressing logout
+app.post("/logout", (req, res) => {
+  res.cookie("username", '');
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {

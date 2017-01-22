@@ -1,2 +1,15 @@
 <meta charset="UTF-8">
 <title>Tiny App</title>
+
+<% if (username === '') { %>
+  <form action="/login" method="POST">
+    <label for="username">Login:</label>
+    <input type="text" name="username" placeholder="Email">
+    <input type="submit" value="Login">
+  </form>
+<% } else {%>
+  Username: <%= username %>
+  <form action="/logout" method="POST">
+    <input type="submit" value="Logout">
+  </form>
+<% } %>
