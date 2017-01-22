@@ -36,19 +36,31 @@ function randomString() {
   return result;
 }
 
+app.get("/", (req, res) => {
+  if (users && users[req.session.user_id]) {
+    res.redirect("/urls");
+  }
+  res.redirect("/login");
+});
+
 //called handler
 app.get("/urls", (req, res) => {
-  let templateVars = {
-    urls: urlDatabase,
-    username: req.session.user_id,
-    users: users
-  };
-  res.render("urls_index", templateVars);
+  if (users && users[req.session.user_id]) {
+    res.status(200);
+    let templateVars = {
+      urls: urlDatabase,
+      username: req.session.user_id,
+      users: users
+    };
+    res.render("urls_index", templateVars);
+  }
+  res.status(401).send("Please Sign In: http://localhost:8080/login");
 });
 
 //input long url through form
 app.get("/urls/new", (req, res) => {
   if (users && users[req.session.user_id]) {
+    res.status(200);
     let templateVars = {
       username: req.session.user_id,
       users: users,
@@ -56,6 +68,7 @@ app.get("/urls/new", (req, res) => {
     };
     res.render("urls_new", templateVars);
   }
+  res.status(401).send("Please Sign In: http://localhost:8080/login")
 });
 
 //receive form data of long url
@@ -181,7 +194,7 @@ app.post("/login", (req, res) => {
 //clears the cookie after pressing logout
 app.post("/logout", (req, res) => {
   req.session.user_id = '';
-  res.redirect("/urls");
+  res.redirect("/");
 });
 
 app.listen(PORT, () => {
