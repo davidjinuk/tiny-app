@@ -1,14 +1,16 @@
 <meta charset="UTF-8">
 <title>Tiny App</title>
 
-<% if (username === '') { %>
+<!-- for log in and log out-->
+<% if (username === undefined || username === '') { %>
   <form action="/login" method="POST">
-    <label for="username">Login:</label>
-    <input type="text" name="username" placeholder="Email">
-    <input type="submit" value="Login">
+      <input type="email" name="email" placeholder="Email">
+      <input type="password" name="password" placeholder="Password">
+      <input type="submit" value="Login">
   </form>
-<% } else {%>
-  Username: <%= username %>
+  <a href="/register">Register</a>
+<% } else { %>
+  Welcome <%= users[username].email %>
   <form action="/logout" method="POST">
     <input type="submit" value="Logout">
   </form>

@@ -4,21 +4,33 @@
     <% include ./partials/_header %>
   </head>
   <body>
-    <!-- urlsDatabase from route / -->
     <ul>
-      <!-- looping through the urlsDatabase -->
-      <% for (let short in urls) { %>
-      <!-- show short url - show long url -->
-      <li>
-        <%= short %> - <%= urls[short] %>
-        <a href="/urls/<%= short %>">Edit</a>
-        <!-- use short for short url to delete -->
-        <form method="POST" action="/urls/<%= short %>/delete">
-          <input type="submit" value="Delete">
-        </form>
-      </li>
+      <% for (let short in urls["global"]) { %>
+        <li>
+          <%= short %> - <%= urls["global"][short] %>
+        </li>
       <% } %>
+    </ul>
+    <% if (users && users[username]) { %>
+      <!-- urlsDatabase from route / -->
+      <ul>
+        <!-- looping through the urlsDatabase -->
+        <% for (let short in urls[username]) { %>
+          <!-- show short url - show long url -->
+          <li>
+            <%= short %> - <%= urls[username][short] %>
+
+            <a href="/urls/<%= short %>">Edit</a>
+            <!-- use short for short url to delete -->
+            <form method="POST" action="/urls/<%= short %>/delete">
+              <input type="submit" value="Delete">
+            </form>
+          </li>
+        <% } %>
+    <% } %>
+      <% if (users && users[username]) { %>
       <li><a href="/urls/new">Shorten URL</a></li>
+      <% } %>
     </ul>
   </body>
 </html>
