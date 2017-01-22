@@ -3,11 +3,19 @@ const app = express();
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const bcrypt = require('bcrypt');
+const cookieSession = require('cookie-session')
 const PORT = process.env.PORT || 8080;
 
 app.set("view engine", "ejs");
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2'],
+
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}))
 
 let urlDatabase = {
   global: {
@@ -32,7 +40,7 @@ function randomString() {
 app.get("/urls", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    username: req.cookies["user_id"],
+    username: req.session.user_id,
     users: users
   };
   res.render("urls_index", templateVars);
@@ -40,9 +48,9 @@ app.get("/urls", (req, res) => {
 
 //input long url through form
 app.get("/urls/new", (req, res) => {
-  if (users && users[req.cookies.user_id]) {
+  if (users && users[req.session.user_id]) {
     let templateVars = {
-      username: req.cookies["user_id"],
+      username: req.session.user_id,
       users: users,
       urls: urlDatabase
     };
@@ -54,7 +62,7 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls", (req, res) => {
   let shortURL = randomString();
   let longURL = req.body.longURL;
-  let username = req.cookies["user_id"];
+  let username = req.session.user_id;
   //add new key-value pair to urlDatabase
   if (urlDatabase[username] === undefined) {
     urlDatabase[username] = {};
@@ -80,8 +88,8 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   let templateVars = {
     shortURL: req.params.id,
-    longURL: urlDatabase[req.cookies["user_id"]][req.params.id],
-    username: req.cookies["user_id"],
+    longURL: urlDatabase[req.session.user_id][req.params.id],
+    username: req.session.user_id,
     users: users,
     urls: urlDatabase
   };
@@ -106,7 +114,7 @@ app.post("/urls/:id", (req, res) => {
 //register page to new page with only form and header
 app.get("/register", (req, res) => {
   let templateVars = {
-    username: req.cookies["user_id"],
+    username: req.session.user_id,
     users: users,
     urls: urlDatabase
   };
@@ -134,7 +142,7 @@ app.post("/register", (req, res) => {
       email: req.body.email,
       password: hashed_password
     };
-    res.cookie("user_id", randomID);
+    req.session.user_id = randomID;
   }
   res.redirect("/urls");
 });
@@ -143,7 +151,7 @@ app.post("/register", (req, res) => {
 app.get("/login", (req, res) => {
   let templateVars = {
     urls: urlDatabase,
-    username: req.cookies["user_id"],
+    username: req.session.user_id,
     users: users,
   };
   res.render("urls_login", templateVars)
@@ -164,7 +172,7 @@ app.post("/login", (req, res) => {
       return res.status(403).send("Incorrect Password!");
     }
     if ((email === users[userID].email) && bcrypt.compareSync(password, hashed_password)) {
-      res.cookie("user_id", users[userID].id);
+      req.session.user_id = users[userID].id;
       return res.redirect("/urls");
     }
   }
@@ -172,7 +180,7 @@ app.post("/login", (req, res) => {
 
 //clears the cookie after pressing logout
 app.post("/logout", (req, res) => {
-  res.cookie("user_id", '');
+  req.session.user_id = '';
   res.redirect("/urls");
 });
 
