@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <% include ./partials/_header %>
+  </head>
+  <body>
+    <ul>
+      <!-- shows short url - shows long url according to the short url -->
+      <li>
+        <%= shortURL %> - <%= longURL%>
+        <form method="POST" action="/urls/<%= shortURL %>">
+          <input id="longURL" type="text" name="longURL" placeholder="<%= longURL %>">
+          <input type="submit" value="Update">
+        </form>
+      </li>
+      <li><a href="/urls">Back to homepage</a></li>
+    </ul>
+  </body>
+</html>
