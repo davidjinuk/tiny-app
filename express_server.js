@@ -94,22 +94,31 @@ app.get("/u/:shortURL", (req, res) => {
 //to show single URL from user input of shortURL to browser
 //to show single URL from form of long url
 app.get("/urls/:id", (req, res) => {
-  for (let user in urlDatabase) {
-    if (req.session.user_id === '') {
+  let userID = req.session.user_id;
+  let shortURL = req.params.id;
+  let longURL = urlDatabase[userID][shortURL];
+
+  console.log(urlDatabase);
+  if (userID === '') {
       return res.status(401).send("Please Sign In: http://localhost:8080/login");
-    }
-    if (user !== req.session.user_id && urlDatabase[user][req.params.id]) {
+  }
+
+
+  for (let user in urlDatabase) {
+
+    if (user !== userID && urlDatabase[user][shortURL]) {
       return res.status(403).send("This is not your URL!");
     }
-    if (!urlDatabase[user][req.params.id]) {
-      return res.status(404).send("Short URL does not exist!");
-    }
+  }
+
+  if (longURL === undefined) {
+    return res.status(404).send("Short URL does not exist!");
   }
   res.status(200);
   let templateVars = {
-    shortURL: req.params.id,
-    longURL: urlDatabase[req.session.user_id][req.params.id],
-    username: req.session.user_id,
+    shortURL: shortURL,
+    longURL: urlDatabase[userID][shortURL],
+    username: userID,
     users: users,
     urls: urlDatabase
   };
