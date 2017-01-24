@@ -4,13 +4,6 @@
     <% include ./partials/_header %>
   </head>
   <body>
-    <ul>
-      <% for (let short in urls["global"]) { %>
-        <li>
-          <%= short %> - <%= urls["global"][short] %>
-        </li>
-      <% } %>
-    </ul>
     <% if (users && users[username]) { %>
       <!-- urlsDatabase from route / -->
       <ul>
@@ -18,10 +11,11 @@
         <% for (let short in urls[username]) { %>
           <!-- show short url - show long url -->
           <li>
-            <%= short %> - <%= urls[username][short] %>
+            <a href="<%= urls[username][short] %>"><%= short %></a> - http://localhost:8080/u/<%= short %> - <%= urls[username][short] %>
 
             <a href="/urls/<%= short %>">Edit</a>
             <!-- use short for short url to delete -->
+            <!-- <form method="POST" action="/urls/<%= short %>/delete">-->
             <form method="POST" action="/urls/<%= short %>/delete">
               <input type="submit" value="Delete">
             </form>

@@ -17,12 +17,7 @@ app.use(cookieSession({
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }))
 
-let urlDatabase = {
-  global: {
-    "b2xVn2": "http://www.lighthouselabs.ca",
-    "9sm5xK": "http://www.google.com"
-  }
-};
+let urlDatabase = {};
 
 let users = {};
 
@@ -93,12 +88,24 @@ app.get("/u/:shortURL", (req, res) => {
       return res.redirect(urlDatabase[user][shortURL]);
     }
   }
-  res.redirect("/urls");
+  res.status(404).send("Short URL does not exist!");
 });
 
 //to show single URL from user input of shortURL to browser
 //to show single URL from form of long url
 app.get("/urls/:id", (req, res) => {
+  for (let user in urlDatabase) {
+    if (req.session.user_id === '') {
+      return res.status(401).send("Please Sign In: http://localhost:8080/login");
+    }
+    if (user !== req.session.user_id && urlDatabase[user][req.params.id]) {
+      return res.status(403).send("This is not your URL!");
+    }
+    if (!urlDatabase[user][req.params.id]) {
+      return res.status(404).send("Short URL does not exist!");
+    }
+  }
+  res.status(200);
   let templateVars = {
     shortURL: req.params.id,
     longURL: urlDatabase[req.session.user_id][req.params.id],
@@ -111,7 +118,7 @@ app.get("/urls/:id", (req, res) => {
 
 //receives form to delete
 app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[req.params.id];
+  delete urlDatabase[req.session.user_id][req.params.id];
   res.redirect("/urls");
 });
 
@@ -120,7 +127,7 @@ app.post("/urls/:id", (req, res) => {
   let shortURL = req.params.id;
   let longURL = req.body.longURL;
   //add updated long url
-  urlDatabase[shortURL] = longURL;
+  urlDatabase[req.session.user_id][shortURL] = longURL;
   res.redirect("/urls/" + shortURL);
 });
 

@@ -7,7 +7,8 @@
     <ul>
       <!-- shows short url - shows long url according to the short url -->
       <li>
-        <%= shortURL %> - <%= longURL%>
+        <a href="<%= urls[username][shortURL] %>"><%= shortURL %></a> - http://localhost:8080/u/<%= shortURL %> -
+        <%= longURL%>
         <form method="POST" action="/urls/<%= shortURL %>">
           <input id="longURL" type="text" name="longURL" placeholder="<%= longURL %>">
           <input type="submit" value="Update">
